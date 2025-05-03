@@ -5,7 +5,7 @@ import csv
 
 class arduino:
     def __init__(self):
-        self.arduino = serial.Serial(port='COM3',baudrate=9600,timeout=0.2)
+        self.arduino = serial.Serial(port='COM3',baudrate=9600,timeout=0.05)
 
     def read(self):
         try:
@@ -25,5 +25,9 @@ while True:
         p = arduino.read()
         print(p)
         data.append(p)
-    with open(f"DATA/{cT}.txt","a") as f:
+    valAr = [float(x) for x in input("enter valence + arousal (e.g. 0.9 -0.2): ").split()]
+    data.append(valAr[0])
+    data.append(valAr[1])
+    with open(f"DATA/{cT}.csv","a") as f:
         csv.writer(f,delimiter=' ').writerow(data)
+
