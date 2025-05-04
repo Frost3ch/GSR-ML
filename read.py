@@ -13,22 +13,26 @@ class arduino:
         except:
             return None
 
-arduino = arduino()
+def main():
+    arduino = arduino()
 
-while arduino.read()==None:
-    pass
+    while arduino.read()==None:
+        pass
 
-while True:
-    cT = time.time() 
-    data = []
-    while time.time()-cT <= 20:
-        p = arduino.read()
-        if p!=None:
-            print(p)
-            data.append(p)
-    valAr = [float(x) for x in input("enter valence + arousal (e.g. 0.9 -0.2): ").split()]
-    data.append(valAr[0])
-    data.append(valAr[1])
-    with open(f"DATA/{cT}.csv","a") as f:
-        csv.writer(f,delimiter=' ').writerow(data)
+    while True:
+        cT = time.time() 
+        data = []
+        while time.time()-cT <= 20:
+            p = arduino.read()
+            if p!=None:
+                print(p)
+                data.append(p)
+        valAr = [float(x) for x in input("enter valence + arousal (e.g. 9 -2): ").split()]
+        data.append(valAr[0])
+        data.append(valAr[1])
+        with open(f"DATA/{cT}.csv","a") as f:
+            csv.writer(f,delimiter=' ').writerow(data)
+
+if __name__ == "__main__":
+    main()
 

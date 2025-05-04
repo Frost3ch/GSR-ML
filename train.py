@@ -4,6 +4,7 @@ import extract
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import make_classification
+import joblib
 
 class train:
     def __init__(self):
@@ -16,12 +17,18 @@ class train:
         plt.show()
 
     def train(self,fSet,vSet):
+        print('Creating Classifier')
         clf = RandomForestClassifier()
+        print('Fitting Data...')
         clf.fit(fSet,vSet)
+        print('COMPLETE!')
         return clf
     
-
 t = train()
-dSet,fSet,vSet = extract.extract().loadFeatures(folder='DATA')
-t.plot(dSet)
+ext = extract.extract()
+dSet,fSet = ext.loadFeatures(folder='DATA/GSR')
+vSet = ext.loadValAr('DATA/valAr.csv')
+# t.plot(dSet)
 clf = t.train(fSet,vSet)
+
+joblib.dump(clf,"model.pkl")
