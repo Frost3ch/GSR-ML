@@ -23,8 +23,9 @@ while True:
     data = []
     while time.time()-cT <= 20:
         p = arduino.read()
-        print(p)
-        data.append(p)
+        if p!=None:
+            print(p)
+            data.append(p)
     valAr = [float(x) for x in input("enter valence + arousal (e.g. 0.9 -0.2): ").split()]
     data.append(valAr[0])
     data.append(valAr[1])
