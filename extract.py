@@ -4,6 +4,7 @@ import glob
 import csv
 from scipy import io
 import os
+from scipy.signal import find_peaks
 
 class extract:
     def __init__(self):
@@ -14,19 +15,31 @@ class extract:
         self.max = np.max(data)
         self.SD = np.std(data)
         self.AM = np.mean(data)
+        self.var = np.var(data)
         self.RMS = np.sqrt(np.mean(data**2))
         self.skew = stats.skew(data)
         self.kurt = stats.kurtosis(data)
         self.med = np.median(data)
 
-        return np.array([self.min,
+        peaks, _ = find_peaks(data, height=0.1)  # Adjust height threshold as needed
+        num_peaks = len(peaks)
+        mean_peak_height = np.mean(data[peaks]) if len(peaks) > 0 else 0
+        max_peak_height = np.max(data[peaks]) if len(peaks) > 0 else 0
+
+        return np.array([
+                         self.min,
                          self.max,
                          self.SD,
                          self.AM,
+                         self.var,
                          self.RMS,
                          self.skew,
                          self.kurt,
-                         self.med])
+                         self.med,
+                         num_peaks,
+                         mean_peak_height,
+                         max_peak_height
+                         ])
     
     # def loadFeatures(self,folder):
     #     data_paths = glob.glob(f'{folder}/*.csv')
@@ -56,8 +69,8 @@ class extract:
         f_set = []
         for path in data_paths:
             data = io.loadmat(path)
-            data = data['s'][0]
-            data = np.array(data)
+            data = data['GSRdata']
+            data =  np.array(data).flatten()
             features = self.get_features(data)
             d_set.append(data)
             f_set.append(features)
@@ -68,6 +81,6 @@ class extract:
         with open(path) as f:
             reader = csv.reader(f)
             data = list(reader)
-            data = [[int(x),int(y)] for [x,y] in data[1:]]
+            data = [[int(x),int(y)] for [x,y] in data]
         v_set = np.array(data)
         return v_set

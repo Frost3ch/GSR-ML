@@ -26,6 +26,7 @@ while time.time()-cT <= 20:
 fSet = extract.extract().get_features(np.array(data))
 clf = joblib.load("RFR.pkl")
 predV = clf.predict([fSet])
+print(predV)
 
 #Plot Valence and Arousal Levels
 ax = plt.axes()
