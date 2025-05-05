@@ -2,8 +2,8 @@ import numpy as np
 import scipy as sp
 import extract
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.datasets import make_classification
+from sklearn.ensemble import RandomForestRegressor
+# from sklearn import svm
 import joblib
 
 class train:
@@ -17,8 +17,9 @@ class train:
         plt.show()
 
     def train(self,fSet,vSet):
-        print('Creating Classifier')
-        clf = RandomForestClassifier()
+        print('Creating Regressor') 
+        clf = RandomForestRegressor()
+        # clf = svm.SVC()
         print('Fitting Data...')
         clf.fit(fSet,vSet)
         print('COMPLETE!')
@@ -31,4 +32,4 @@ vSet = ext.loadValAr('DATA/valAr.csv')
 # t.plot(dSet)
 clf = t.train(fSet,vSet)
 
-joblib.dump(clf,"model.pkl")
+joblib.dump(clf,"RFR.pkl")
