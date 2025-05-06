@@ -32,7 +32,7 @@ class extract:
     
     
     def loadFeatures(self,folder):
-        data_paths = glob.glob(f'{folder}/*.mat')
+        data_paths = sorted(glob.glob(f'{folder}/*.mat'))
         d_set = []
         f_set = []
         for path in data_paths:
