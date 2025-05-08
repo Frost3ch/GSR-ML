@@ -20,18 +20,18 @@ class extract:
             counter=0                                                                                                                                                     
             for i,b in enumerate(borders):
                 if i==0:
-                    bTimes = [mat[0],mat[b][0]]
+                    bTimes = [mat[0][0],mat[b][0]]
                     valAr = np.mean(mat[:b],axis=0)[1:]
                 else:
-                    bTimes = [borders[i-1],mat[b][0]]
+                    bTimes = [borders[i-1][0],mat[b][0]]
                     valAr = np.mean(mat[borders[i-1]:b],axis=0)[1:]
                 if b-borders[i-1]>self.minSamples:
                     section.append([bTimes,valAr])
                     counter+=1
-            print(len(borders))
-            print(counter)
+            # print(len(borders))
+            # print(counter)
             all_valArs.append(section)
-        #return all_valArs
+        return all_valArs
 
 e = extract()
 e.load()

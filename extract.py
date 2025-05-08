@@ -10,9 +10,53 @@ import matplotlib.pyplot as plt
 
 class extract:
     def __init__(self):
-        pass
+        self.sepDist=200
+        self.minSamples=50
+        
+    def loadValar(self):
+        paths = glob.glob('DATA/annotations/*.txt')
+
+        all_valArs = []
+
+        for path in paths:
+            mat = np.loadtxt(path)
+            section = []
+            b = mat[1:][1:]-mat[:-1][1:]
+            v = abs(b)>self.sepDist
+            borders = v.nonzero()[0]+1
+            counter=0                                                                                                                                                     
+            for i,b in enumerate(borders):
+                if i==0:
+                    bTimes = [mat[0][0],mat[b][0]]
+                    valAr = np.mean(mat[:b],axis=0)[1:]
+                else:
+                    bTimes = [borders[i-1][0],mat[b][0]]
+                    valAr = np.mean(mat[borders[i-1]:b],axis=0)[1:]
+                if b-borders[i-1]>self.minSamples:
+                    section.append([bTimes,valAr])
+                    counter+=1
+            # print(len(borders))
+            # print(counter)
+            all_valArs.append(section)
+        return all_valArs
     
-    def get_features(self,data):
+    def get_ECG_features(self,data):
+        peaks, _ = find_peaks(data, distance=80)
+        rr_intervals = np.diff(peaks) / 256 # in seconds
+        heart_rate = 60 / np.mean(rr_intervals)
+        sdnn = np.std(rr_intervals)
+        rmssd = np.sqrt(np.mean(np.diff(rr_intervals)**2))
+        diff_rr = np.abs(np.diff(rr_intervals))
+        pnn50 = np.sum(diff_rr > 0.05) / len(diff_rr) * 100  # 0.05s = 50ms
+                                  
+        return np.array([
+                         heart_rate,
+                         sdnn,
+                         rmssd,
+                         pnn50
+                         ])
+    
+    def get_GSR_features(self,data):
         min = np.min(data)
         max = np.max(data)
         SD = np.std(data)
@@ -47,35 +91,28 @@ class extract:
                         #  max_peak_height
                          ])
     
-    
-    def loadFeatures(self,folder):
-        data_paths = sorted(glob.glob(f'{folder}/*.mat'))
-        d_set = []
-        f_set = []
-        for path in data_paths:
-            data = io.loadmat(path)
-            data = data['GSRdata']
-            data =  np.array(data).flatten()
-            data = savgol_filter(data, window_length=11, polyorder=2)
-            peaks,features = self.get_features(data)
-            x = np.linspace(0,len(data),len(data))
-            # print(path)
-            # plt.plot(x,data)
-            # plt.plot(peaks, data[peaks], "x")
-            # plt.show()
-            d_set.append(data)
-            f_set.append(features)
-        return d_set,f_set
-    
-    def loadValAr(self,path):
-        v_set = []
-        a_set = []
-        with open(path) as f:
-            reader = csv.reader(f,delimiter='\t')
-            data = list(reader)
-            data = [[int(x),int(y)] for [x,y] in data]
-        data = np.hsplit(np.array(data),2)
-        v_set = np.ravel(data[0])
+    def loadData(self,folder):
+        paths = glob.glob(f'{folder}/physiological/*.txt')
 
-        a_set = np.ravel(data[1])
-        return v_set,a_set
+        t_fSet = []
+        for path in paths:
+            mat = np.loadtxt(path)
+            mat = np.hsplit(mat,9)
+            fSet = [mat[0].flatten(),mat[4].flatten(),mat[1].flatten()]    
+            t_fSet.append(fSet)
+        return t_fSet
+    
+    def pairXY(self,t_fSet,all_valArs):
+        fX = []
+        fY = []
+        for i,valAr in enumerate(all_valArs):
+            j = 0
+            sect = []
+            while valAr[0][1] > t_fSet[i][0][j]:
+                j+=1
+            GSR_fSet = self.get_GSR_features(t_fSet[i][1][:j])
+            ECG_fSet = self.get_GSR_features(t_fSet[i][2][:j])
+
+            fX.append(np.concatenate((GSR_fSet,ECG_fSet),axis=1))
+            fY.append(valAr[1])
+        return fX,fY

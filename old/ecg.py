@@ -32,14 +32,13 @@ class extract:
     
     
     def loadFeatures(self,folder):
-        data_paths = sorted(glob.glob(f'{folder}/*.mat'))
-        d_set = []
-        f_set = []
-        for path in data_paths:
-            data = io.loadmat(path)
-            data = data['ECGdata']
-            data =  np.array(data).flatten()
-            features = self.get_features(data)
-            d_set.append(data)
-            f_set.append(features)
-        return d_set, f_set
+        paths = glob.glob('DATA/physiological/*.txt')
+
+        t_readings = []
+        for path in paths:
+            mat = np.loadtxt(path)
+            reading = []
+            mat = np.hsplit(mat,9)   
+            reading = [mat[0],mat[1],mat[3]]    
+            t_readings.append(reading)
+        return t_readings
