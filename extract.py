@@ -13,8 +13,8 @@ class extract:
         self.sepDist=200
         self.minSamples=50
         
-    def loadValar(self):
-        paths = glob.glob('DATA/annotations/*.txt')
+    def loadValar(self,folder):
+        paths = glob.glob(f'{folder}/annotations/*.txt')
 
         all_valArs = []
 
@@ -24,20 +24,24 @@ class extract:
             b = mat[1:][1:]-mat[:-1][1:]
             v = abs(b)>self.sepDist
             borders = v.nonzero()[0]+1
-            counter=0                                                                                                                                                     
+            counter=0      
+            # print(borders)                                                                                                                                               
             for i,b in enumerate(borders):
                 if i==0:
                     bTimes = [mat[0][0],mat[b][0]]
                     valAr = np.mean(mat[:b],axis=0)[1:]
                 else:
-                    bTimes = [borders[i-1][0],mat[b][0]]
+                    bTimes = [mat[borders[i-1]][0],mat[b][0]]
                     valAr = np.mean(mat[borders[i-1]:b],axis=0)[1:]
-                if b-borders[i-1]>self.minSamples:
-                    section.append([bTimes,valAr])
-                    counter+=1
+
+                    if b-borders[i-1]>self.minSamples:
+                        section.append([bTimes,valAr])
+                        counter+=1
             # print(len(borders))
             # print(counter)
             all_valArs.append(section)
+        print('valArs are loaded...')
+        # print(all_valArs)
         return all_valArs
     
     def get_ECG_features(self,data):
@@ -76,7 +80,7 @@ class extract:
         # print(num_peaks)
         # print(mean_peak_height)
 
-        return peaks,np.array([
+        return np.array([
                         #  min,
                         #  max,
                          SD,
@@ -100,19 +104,29 @@ class extract:
             mat = np.hsplit(mat,9)
             fSet = [mat[0].flatten(),mat[4].flatten(),mat[1].flatten()]    
             t_fSet.append(fSet)
+
+        print("Data Loaded...")
+        # print(t_fSet)
+
         return t_fSet
     
     def pairXY(self,t_fSet,all_valArs):
         fX = []
         fY = []
-        for i,valAr in enumerate(all_valArs):
-            j = 0
-            sect = []
-            while valAr[0][1] > t_fSet[i][0][j]:
-                j+=1
-            GSR_fSet = self.get_GSR_features(t_fSet[i][1][:j])
-            ECG_fSet = self.get_GSR_features(t_fSet[i][2][:j])
+        for i,section in enumerate(all_valArs):
+            for j,valAr in enumerate(section):
+                k = 0
+                while valAr[0][1] > t_fSet[i][0][k]:
+                    k+=1
+                GSR_fSet = self.get_GSR_features(t_fSet[i][1][:k])
+                ECG_fSet = self.get_ECG_features(t_fSet[i][2][:k])
 
-            fX.append(np.concatenate((GSR_fSet,ECG_fSet),axis=1))
-            fY.append(valAr[1])
-        return fX,fY
+                # print(GSR_fSet)
+                # print(ECG_fSet)
+                fX.append(np.concatenate((GSR_fSet,ECG_fSet)))
+                fY.append(valAr[1])
+        
+        print('paired X and Y')
+        print(fX)
+        print(fY)
+        return np.array(fX),np.array(fY)

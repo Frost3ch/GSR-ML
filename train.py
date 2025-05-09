@@ -1,7 +1,6 @@
 import numpy as np
 import scipy as sp
 import extract
-import hide.ecg as ecgClass
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
@@ -31,8 +30,8 @@ class train:
 
 t = train()
 ext = extract.extract()
+all_valArs = ext.loadValar('DATA')
 t_fSet = ext.loadData('DATA')
-all_valArs = ext.loadValar()
 fX,fY = ext.pairXY(t_fSet,all_valArs)
 
 # x = np.linspace(0,20,len(ecg_dSet[0]))
@@ -48,7 +47,7 @@ a_clf = t.train(fX,arous)
 
 #Test model with test data
 t_fSet = ext.loadData('TEST')
-all_valArs = ext.loadValar()
+all_valArs = ext.loadValar('TEST')
 fX,fY = ext.pairXY(t_fSet,all_valArs)
 fY = np.hsplit(fY,2)
 vals = fY[0].flatten()
